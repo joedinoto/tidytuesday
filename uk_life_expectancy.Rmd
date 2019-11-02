@@ -1,0 +1,30 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r warnings=FALSE, echo=FALSE}
+# libraries
+library(tidyverse)
+```
+
+
+```{r warning=FALSE, echo=FALSE, message=FALSE}
+# read the data
+UK_life_expentancy <- readr::read_csv("UK_life_expectancy.csv")
+```
+
+```{r}
+UK_life_expentancy %>%
+```
+
+```{r}
+
+```
+
