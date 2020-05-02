@@ -37,4 +37,18 @@ tdf_winners %>%
   geom_line()
 ```
 
-
+```{r}
+tdf_winners %>%
+  mutate(avg_speed = distance/time_overall) %>%
+  ggplot(aes(start_date,avg_speed))+
+  geom_smooth()+
+  geom_point()+
+  geom_line()
+```
+```{r}
+tdf_winners %>%
+  mutate(avg_speed = distance/time_overall) %>%
+  mutate(decade_start=year(start_date) - year(start_date)%%10) %>%
+  ggplot(aes(decade_start,avg_speed,group=decade_start))+
+  geom_boxplot()
+```
