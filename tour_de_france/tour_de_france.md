@@ -1,0 +1,16 @@
+---
+title: "#TidyTuesday Tour de France"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+
+```r
+# Get the Data
+
+tdf_winners <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-07/tdf_winners.csv')
+```
+
+
+
