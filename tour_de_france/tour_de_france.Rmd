@@ -9,11 +9,14 @@ output:
 # Get the Data
 
 tdf_winners <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-07/tdf_winners.csv')
+```
 
+```{r}
 # libraries
 library(tidyverse)
 library(lubridate)
 library(ggplot2)
+library(dplyr)
 ```
 
 ```{r cache=TRUE}
@@ -37,7 +40,7 @@ tdf_winners %>%
   geom_line()
 ```
 
-```{r}
+```{r warning=FALSE}
 tdf_winners %>%
   mutate(avg_speed = distance/time_overall) %>%
   ggplot(aes(start_date,avg_speed))+
@@ -52,3 +55,12 @@ tdf_winners %>%
   ggplot(aes(decade_start,avg_speed,group=decade_start))+
   geom_boxplot()
 ```
+
+
+```{r}
+tdf_winners %>%
+  mutate(age=round(as.numeric(difftime(died,born,"days")/365),1)) %>%
+  ggplot(aes(age))+
+  geom_histogram()
+```
+
