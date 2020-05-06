@@ -15,3 +15,11 @@ villagers <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/
 
 ```
 
+Let's look at the data. 
+```{r}
+summary(critic)
+```
+```{r}
+summary(user_reviews)
+```
+
