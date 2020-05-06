@@ -23,3 +23,11 @@ summary(critic)
 summary(user_reviews)
 ```
 
+```{r}
+summary(villagers)
+```
+
+```{r}
+summary(items)
+```
+
