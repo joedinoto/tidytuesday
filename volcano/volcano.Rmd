@@ -23,3 +23,45 @@ volcano_raw %>%
   count(primary_volcano_type, sort = TRUE)
 ```
 
+## Too many volcano types
+
+See the code below to see how to reduce the number of volcano types to the two most common plus "other". 
+
+```{r}
+volcano_df <- volcano_raw %>% # create a new dataframe named volcano_df
+  transmute( # transmute() is a dplyr functino that adds new variables and drops existing ones while preserving the number of rows. The New variables overwrite existing variables of the same name.
+    volcano_type = case_when( # "stratovoclano" and "shield" are the new variable names to collect Stratovolcano(es) and "stratovolcano" into one variable. All other varialbes beyond that and "sheild" are simply named "other". 
+      str_detect(primary_volcano_type, "Stratovolcano") ~ "Stratovolcano",
+      str_detect(primary_volcano_type, "Shield") ~ "Shield",
+      TRUE ~ "Other"
+    ), # We still want to keep the following fields. 
+    volcano_number, latitude, longitude, elevation,
+    tectonic_settings, major_rock_1
+  ) %>% 
+  mutate_if(is.character, factor) #if a column contains characters, it's automatically a factor. 
+
+volcano_df %>%
+  count(volcano_type, sort = TRUE)  #Now count the types of volcano according to the new grouping
+```
+
+## Let's build a map!
+
+```{r}
+world <- map_data("world")
+
+ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(long, lat, map_id = region),
+    color = "white", fill = "gray50", size = 0.05, alpha = 0.2
+  ) +
+  geom_point(
+    data = volcano_df,
+    aes(longitude, latitude, color = volcano_type),
+    alpha = 0.8
+  ) +
+  theme_void(base_family = "IBMPlexSans") +
+  labs(x = NULL, y = NULL, color = NULL)
+```
+
+
