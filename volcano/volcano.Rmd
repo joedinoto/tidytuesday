@@ -1,0 +1,25 @@
+---
+title: "Volcano Analysis"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+Inspired by https://juliasilge.com/blog/multinomial-volcano-eruptions/ 
+
+## First, let's get the data.
+```{r cache=TRUE, warning=FALSE, message=FALSE, error=FALSE}
+volcano_raw <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/volcano.csv")
+```
+
+## Load some Libraries
+```{r warning = FALSE, message=FALSE, error=FALSE}
+library(tidyverse)
+```
+
+## Count the number of primary volcano types
+```{r}
+volcano_raw %>%
+  count(primary_volcano_type, sort = TRUE)
+```
+
