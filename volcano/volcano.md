@@ -50,8 +50,12 @@ See the code below to see how to reduce the number of volcano types to the two m
 
 ```r
 volcano_df <- volcano_raw %>% # create a new dataframe named volcano_df
-  transmute( # transmute() is a dplyr functino that adds new variables and drops existing ones while preserving the number of rows. The New variables overwrite existing variables of the same name.
-    volcano_type = case_when( # "stratovoclano" and "shield" are the new variable names to collect Stratovolcano(es) and "stratovolcano" into one variable. All other varialbes beyond that and "sheild" are simply named "other". 
+  transmute( # transmute() is a dplyr functino that adds new variables 
+    # and drops existing ones while preserving the number of rows. 
+    # The New variables overwrite existing variables of the same name.
+    volcano_type = case_when( # "stratovoclano" and "shield" are the new variable names 
+      # to collect Stratovolcano(es) and "stratovolcano" into one variable. 
+      #All other varialbes beyond that and "sheild" are simply named "other". 
       str_detect(primary_volcano_type, "Stratovolcano") ~ "Stratovolcano",
       str_detect(primary_volcano_type, "Shield") ~ "Shield",
       TRUE ~ "Other"
@@ -59,8 +63,8 @@ volcano_df <- volcano_raw %>% # create a new dataframe named volcano_df
     volcano_number, latitude, longitude, elevation,
     tectonic_settings, major_rock_1
   ) %>% 
-  mutate_if(is.character, factor) #if a column contains characters, it's automatically a factor. 
-
+  mutate_if(is.character, factor) #if a column contains characters, 
+#it's automatically a factor. 
 volcano_df %>%
   count(volcano_type, sort = TRUE)  #Now count the types of volcano according to the new grouping
 ```
@@ -84,26 +88,141 @@ ggplot() +
   geom_map(
     data = world, map = world,
     aes(long, lat, map_id = region),
-    color = "white", fill = "gray50", size = 0.05, alpha = 0.2
+    color = "white", fill = "gray50", size = 0.5, alpha = 0.2
   ) +
   geom_point(
     data = volcano_df,
     aes(longitude, latitude, color = volcano_type),
     alpha = 0.8
   ) +
-  theme_void(base_family = "IBMPlexSans") +
+  #theme_void(base_family = "IBMPlexSans") +
   labs(x = NULL, y = NULL, color = NULL)
 ```
 
-```
-## Warning: Ignoring unknown aesthetics: x, y
-```
-
-```
-## Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family not
-## found in Windows font database
-```
-
 ![](volcano_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+
+# Bootstrap resample time!
+
+
+```r
+library(tidymodels)
+volcano_boot <- bootstraps(volcano_df)
+
+volcano_boot
+```
+
+```
+## # Bootstrap sampling 
+## # A tibble: 25 x 2
+##    splits            id         
+##    <list>            <chr>      
+##  1 <split [958/356]> Bootstrap01
+##  2 <split [958/337]> Bootstrap02
+##  3 <split [958/356]> Bootstrap03
+##  4 <split [958/333]> Bootstrap04
+##  5 <split [958/357]> Bootstrap05
+##  6 <split [958/351]> Bootstrap06
+##  7 <split [958/369]> Bootstrap07
+##  8 <split [958/340]> Bootstrap08
+##  9 <split [958/348]> Bootstrap09
+## 10 <split [958/359]> Bootstrap10
+## # ... with 15 more rows
+```
+
+
+
+```r
+library(themis)
+
+volcano_rec <- recipe(volcano_type ~ ., data = volcano_df) %>%
+  update_role(volcano_number, new_role = "Id") %>%
+  step_other(tectonic_settings) %>%
+  step_other(major_rock_1) %>%
+  step_dummy(tectonic_settings, major_rock_1) %>%
+  step_zv(all_predictors()) %>%
+  step_normalize(all_predictors()) %>%
+  step_smote(volcano_type)
+```
+
+
+```r
+volcano_prep <- prep(volcano_rec)
+juice(volcano_prep)
+```
+
+```
+## # A tibble: 1,383 x 14
+##    volcano_number latitude longitude elevation volcano_type tectonic_settin~
+##             <dbl>    <dbl>     <dbl>     <dbl> <fct>                   <dbl>
+##  1         213004   0.746      0.101   -0.131  Other                  -0.289
+##  2         284141   0.172      1.11    -1.39   Other                  -0.289
+##  3         282080   0.526      0.975   -0.535  Other                  -0.289
+##  4         285070   0.899      1.10    -0.263  Other                  -0.289
+##  5         320020   1.44      -1.45     0.250  Other                  -0.289
+##  6         221060  -0.0377     0.155   -0.920  Other                  -0.289
+##  7         273088   0.0739     0.888    0.330  Other                  -0.289
+##  8         266020  -0.451      0.918   -0.0514 Other                  -0.289
+##  9         233011  -0.873      0.233   -0.280  Other                  -0.289
+## 10         257040  -0.989      1.32    -0.380  Other                  -0.289
+## # ... with 1,373 more rows, and 8 more variables:
+## #   tectonic_settings_Rift.zone...Oceanic.crust....15.km. <dbl>,
+## #   tectonic_settings_Subduction.zone...Continental.crust...25.km. <dbl>,
+## #   tectonic_settings_Subduction.zone...Oceanic.crust....15.km. <dbl>,
+## #   tectonic_settings_other <dbl>, major_rock_1_Basalt...Picro.Basalt <dbl>,
+## #   major_rock_1_Dacite <dbl>,
+## #   major_rock_1_Trachybasalt...Tephrite.Basanite <dbl>,
+## #   major_rock_1_other <dbl>
+```
+
+> The ranger implementation for random forest can handle multinomial classification without any special handling. - Julia Silge
+
+
+```r
+rf_spec <- rand_forest(trees = 1000) %>%
+  set_mode("classification") %>%
+  set_engine("ranger")
+
+volcano_wf <- workflow() %>%
+  add_recipe(volcano_rec) %>%
+  add_model(rf_spec)
+
+volcano_wf
+```
+
+```
+## == Workflow ==============================================================================================
+## Preprocessor: Recipe
+## Model: rand_forest()
+## 
+## -- Preprocessor ------------------------------------------------------------------------------------------
+## 6 Recipe Steps
+## 
+## * step_other()
+## * step_other()
+## * step_dummy()
+## * step_zv()
+## * step_normalize()
+## * step_smote()
+## 
+## -- Model -------------------------------------------------------------------------------------------------
+## Random Forest Model Specification (classification)
+## 
+## Main Arguments:
+##   trees = 1000
+## 
+## Computational engine: ranger
+```
+
+## Fitting the workflow to the resamples
+
+
+```r
+volcano_res <- fit_resamples(
+  volcano_wf,
+  resamples = volcano_boot,
+  control = control_resamples(save_pred = TRUE)
+)
+```
 
 

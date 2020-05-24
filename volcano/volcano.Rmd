@@ -5,7 +5,8 @@ output:
     keep_md: yes
 ---
 
-Inspired by https://juliasilge.com/blog/multinomial-volcano-eruptions/ 
+Following along the example of Julia Silge:
+https://juliasilge.com/blog/multinomial-volcano-eruptions/ 
 
 ## First, let's get the data.
 ```{r cache=TRUE, warning=FALSE, message=FALSE, error=FALSE}
@@ -29,8 +30,12 @@ See the code below to see how to reduce the number of volcano types to the two m
 
 ```{r}
 volcano_df <- volcano_raw %>% # create a new dataframe named volcano_df
-  transmute( # transmute() is a dplyr functino that adds new variables and drops existing ones while preserving the number of rows. The New variables overwrite existing variables of the same name.
-    volcano_type = case_when( # "stratovoclano" and "shield" are the new variable names to collect Stratovolcano(es) and "stratovolcano" into one variable. All other varialbes beyond that and "sheild" are simply named "other". 
+  transmute( # transmute() is a dplyr functino that adds new variables 
+    # and drops existing ones while preserving the number of rows. 
+    # The New variables overwrite existing variables of the same name.
+    volcano_type = case_when( # "stratovoclano" and "shield" are the new variable names 
+      # to collect Stratovolcano(es) and "stratovolcano" into one variable. 
+      #All other varialbes beyond that and "sheild" are simply named "other". 
       str_detect(primary_volcano_type, "Stratovolcano") ~ "Stratovolcano",
       str_detect(primary_volcano_type, "Shield") ~ "Shield",
       TRUE ~ "Other"
@@ -38,30 +43,89 @@ volcano_df <- volcano_raw %>% # create a new dataframe named volcano_df
     volcano_number, latitude, longitude, elevation,
     tectonic_settings, major_rock_1
   ) %>% 
-  mutate_if(is.character, factor) #if a column contains characters, it's automatically a factor. 
-
+  mutate_if(is.character, factor) #if a column contains characters, 
+#it's automatically a factor. 
 volcano_df %>%
   count(volcano_type, sort = TRUE)  #Now count the types of volcano according to the new grouping
 ```
 
 ## Let's build a map!
 
-```{r}
+```{r warning=FALSE}
 world <- map_data("world")
 
 ggplot() +
   geom_map(
     data = world, map = world,
     aes(long, lat, map_id = region),
-    color = "white", fill = "gray50", size = 0.05, alpha = 0.2
+    color = "white", fill = "gray50", size = 0.5, alpha = 0.2
   ) +
   geom_point(
     data = volcano_df,
     aes(longitude, latitude, color = volcano_type),
     alpha = 0.8
   ) +
-  theme_void(base_family = "IBMPlexSans") +
+  #theme_void(base_family = "IBMPlexSans") +
   labs(x = NULL, y = NULL, color = NULL)
 ```
 
+
+# Bootstrap resample time!
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(tidymodels)
+volcano_boot <- bootstraps(volcano_df)
+
+volcano_boot
+```
+
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(themis)
+
+volcano_rec <- recipe(volcano_type ~ ., data = volcano_df) %>%
+  update_role(volcano_number, new_role = "Id") %>%
+  step_other(tectonic_settings) %>%
+  step_other(major_rock_1) %>%
+  step_dummy(tectonic_settings, major_rock_1) %>%
+  step_zv(all_predictors()) %>%
+  step_normalize(all_predictors()) %>%
+  step_smote(volcano_type)
+```
+
+```{r}
+volcano_prep <- prep(volcano_rec)
+juice(volcano_prep)
+```
+
+> The ranger implementation for random forest can handle multinomial classification without any special handling. - Julia Silge
+
+```{r}
+rf_spec <- rand_forest(trees = 1000) %>%
+  set_mode("classification") %>%
+  set_engine("ranger")
+
+volcano_wf <- workflow() %>%
+  add_recipe(volcano_rec) %>%
+  add_model(rf_spec)
+
+volcano_wf
+```
+
+## Fitting the workflow to the resamples
+
+```{r}
+volcano_res <- fit_resamples(
+  volcano_wf,
+  resamples = volcano_boot,
+  control = control_resamples(save_pred = TRUE)
+)
+```
+
+## Explore results
+
+```{r}
+volcano_res %>%
+  collect_metrics()
+```
 
