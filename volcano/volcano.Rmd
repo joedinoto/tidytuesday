@@ -98,9 +98,9 @@ volcano_prep <- prep(volcano_rec)
 juice(volcano_prep)
 ```
 
-> The ranger implementation for random forest can handle multinomial classification without any special handling. - Julia Silge
+> *The ranger implementation for random forest can handle multinomial classification without any special handling.* - Julia Silge
 
-```{r}
+```{r cache=TRUE}
 rf_spec <- rand_forest(trees = 1000) %>%
   set_mode("classification") %>%
   set_engine("ranger")
@@ -114,7 +114,7 @@ volcano_wf
 
 ## Fitting the workflow to the resamples
 
-```{r}
+```{r cache=TRUE}
 volcano_res <- fit_resamples(
   volcano_wf,
   resamples = volcano_boot,
@@ -127,5 +127,68 @@ volcano_res <- fit_resamples(
 ```{r}
 volcano_res %>%
   collect_metrics()
+```
+
+## Confusion matrix
+
+```{r}
+volcano_res %>%
+  collect_predictions() %>%
+  conf_mat(volcano_type, .pred_class)
+```
+
+## Grouping by resample
+
+```{r}
+volcano_res %>%
+  collect_predictions() %>%
+  group_by(id) %>%
+  ppv(volcano_type, .pred_class)
+```
+
+## Which variables are important? 
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(vip)
+
+rf_spec %>%
+  set_engine("ranger", importance = "permutation") %>%
+  fit(
+    volcano_type ~ .,
+    data = juice(volcano_prep) %>%
+      select(-volcano_number) %>%
+      janitor::clean_names()
+  ) %>%
+  vip(geom = "point")
+```
+
+
+
+```{r}
+volcano_pred <- volcano_res %>%
+  collect_predictions() %>%
+  mutate(correct = volcano_type == .pred_class) %>%
+  left_join(volcano_df %>%
+    mutate(.row = row_number()))
+
+volcano_pred
+```
+
+```{r}
+ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(long, lat, map_id = region),
+    color = "white", fill = "gray90", size = 0.05, alpha = 0.5
+  ) +
+  stat_summary_hex(
+    data = volcano_pred,
+    aes(longitude, latitude, z = as.integer(correct)),
+    fun = "mean",
+    alpha = 0.7, bins = 50
+  ) +
+  scale_fill_gradient(high = "cyan3", labels = scales::percent) +
+  #theme_void(base_family = "IBMPlexSans") +
+  labs(x = NULL, y = NULL, fill = "Percent classified\ncorrectly")
 ```
 

@@ -5,7 +5,8 @@ output:
     keep_md: yes
 ---
 
-Inspired by https://juliasilge.com/blog/multinomial-volcano-eruptions/ 
+Following along the example of Julia Silge:
+https://juliasilge.com/blog/multinomial-volcano-eruptions/ 
 
 ## First, let's get the data.
 
@@ -175,7 +176,7 @@ juice(volcano_prep)
 ## #   major_rock_1_other <dbl>
 ```
 
-> The ranger implementation for random forest can handle multinomial classification without any special handling. - Julia Silge
+> *The ranger implementation for random forest can handle multinomial classification without any special handling.* - Julia Silge
 
 
 ```r
@@ -225,4 +226,145 @@ volcano_res <- fit_resamples(
 )
 ```
 
+## Explore results
+
+
+```r
+volcano_res %>%
+  collect_metrics()
+```
+
+```
+## # A tibble: 2 x 5
+##   .metric  .estimator  mean     n std_err
+##   <chr>    <chr>      <dbl> <int>   <dbl>
+## 1 accuracy multiclass 0.658    25 0.00453
+## 2 roc_auc  hand_till  0.794    25 0.00402
+```
+
+## Confusion matrix
+
+
+```r
+volcano_res %>%
+  collect_predictions() %>%
+  conf_mat(volcano_type, .pred_class)
+```
+
+```
+##                Truth
+## Prediction      Other Shield Stratovolcano
+##   Other          1941    314           776
+##   Shield          231    561           184
+##   Stratovolcano  1281    207          3251
+```
+
+## Grouping by resample
+
+
+```r
+volcano_res %>%
+  collect_predictions() %>%
+  group_by(id) %>%
+  ppv(volcano_type, .pred_class)
+```
+
+```
+## # A tibble: 25 x 4
+##    id          .metric .estimator .estimate
+##    <chr>       <chr>   <chr>          <dbl>
+##  1 Bootstrap01 ppv     macro          0.635
+##  2 Bootstrap02 ppv     macro          0.669
+##  3 Bootstrap03 ppv     macro          0.628
+##  4 Bootstrap04 ppv     macro          0.581
+##  5 Bootstrap05 ppv     macro          0.649
+##  6 Bootstrap06 ppv     macro          0.631
+##  7 Bootstrap07 ppv     macro          0.633
+##  8 Bootstrap08 ppv     macro          0.575
+##  9 Bootstrap09 ppv     macro          0.666
+## 10 Bootstrap10 ppv     macro          0.640
+## # ... with 15 more rows
+```
+
+## Which variables are important? 
+
+
+```r
+library(vip)
+
+rf_spec %>%
+  set_engine("ranger", importance = "permutation") %>%
+  fit(
+    volcano_type ~ .,
+    data = juice(volcano_prep) %>%
+      select(-volcano_number) %>%
+      janitor::clean_names()
+  ) %>%
+  vip(geom = "point")
+```
+
+![](volcano_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
+
+
+
+```r
+volcano_pred <- volcano_res %>%
+  collect_predictions() %>%
+  mutate(correct = volcano_type == .pred_class) %>%
+  left_join(volcano_df %>%
+    mutate(.row = row_number()))
+```
+
+```
+## Joining, by = c(".row", "volcano_type")
+```
+
+```r
+volcano_pred
+```
+
+```
+## # A tibble: 8,746 x 14
+##    id    .pred_Other .pred_Shield .pred_Stratovol~  .row .pred_class
+##    <chr>       <dbl>        <dbl>            <dbl> <int> <fct>      
+##  1 Boot~       0.234       0.0645            0.701     5 Stratovolc~
+##  2 Boot~       0.201       0.112             0.688    11 Stratovolc~
+##  3 Boot~       0.508       0.0164            0.476    12 Other      
+##  4 Boot~       0.518       0.0236            0.459    14 Other      
+##  5 Boot~       0.297       0.135             0.568    19 Stratovolc~
+##  6 Boot~       0.315       0.0311            0.654    21 Stratovolc~
+##  7 Boot~       0.324       0.0970            0.579    23 Stratovolc~
+##  8 Boot~       0.190       0.442             0.368    24 Shield     
+##  9 Boot~       0.163       0.542             0.295    26 Shield     
+## 10 Boot~       0.276       0.0660            0.658    27 Stratovolc~
+## # ... with 8,736 more rows, and 8 more variables: volcano_type <fct>,
+## #   correct <lgl>, volcano_number <dbl>, latitude <dbl>, longitude <dbl>,
+## #   elevation <dbl>, tectonic_settings <fct>, major_rock_1 <fct>
+```
+
+
+```r
+ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(long, lat, map_id = region),
+    color = "white", fill = "gray90", size = 0.05, alpha = 0.5
+  ) +
+  stat_summary_hex(
+    data = volcano_pred,
+    aes(longitude, latitude, z = as.integer(correct)),
+    fun = "mean",
+    alpha = 0.7, bins = 50
+  ) +
+  scale_fill_gradient(high = "cyan3", labels = scales::percent) +
+  #theme_void(base_family = "IBMPlexSans") +
+  labs(x = NULL, y = NULL, fill = "Percent classified\ncorrectly")
+```
+
+```
+## Warning: Ignoring unknown aesthetics: x, y
+```
+
+![](volcano_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
 
