@@ -20,3 +20,8 @@ tune
 workflows
 yardstick
 themis
+ggthemes
+leaflet
+glue
+htmlwidgets
+DT
