@@ -5,6 +5,52 @@ output:
     keep_md: yes
 ---
 
+# Exploration and Visualization
+
+Following along the example of David Robinson: 
+https://github.com/dgrtwo/data-screencasts/blob/master/volcano-eruptions.Rmd
+
+## Get the data
+
+```{r message=FALSE, warning=FALSE, error=FALSE, cache=TRUE}
+volcano <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/volcano.csv')
+eruptions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/eruptions.csv')
+events <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/events.csv')
+tree_rings <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/tree_rings.csv')
+sulfur <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/sulfur.csv')
+```
+
+## Load some Libraries
+```{r warning = FALSE, message=FALSE, error=FALSE}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Changing the eruption year to a number
+
+```{r}
+volcano %>%
+  mutate(last_eruption_year = as.numeric(last_eruption_year))
+```
+
+# Plot the number of eruptions by year as a histogram with log10 x axis.
+
+```{r}
+volcano %>%
+  count(evidence_category, sort = TRUE)
+```
+
+```{r}
+volcano %>%
+  mutate(years_ago= 2020-as.numeric(last_eruption_year)) %>%
+  ggplot(aes(years_ago+1, fill=evidence_category)) +
+  geom_histogram()+
+  scale_x_log10()
+```
+
+
+# Machine Learning
+
 Following along the example of Julia Silge:
 https://juliasilge.com/blog/multinomial-volcano-eruptions/ 
 
@@ -13,10 +59,6 @@ https://juliasilge.com/blog/multinomial-volcano-eruptions/
 volcano_raw <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/volcano.csv")
 ```
 
-## Load some Libraries
-```{r warning = FALSE, message=FALSE, error=FALSE}
-library(tidyverse)
-```
 
 ## Count the number of primary volcano types
 ```{r}

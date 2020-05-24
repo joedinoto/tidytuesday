@@ -5,6 +5,110 @@ output:
     keep_md: yes
 ---
 
+# Exploration and Visualization
+
+Following along the example of David Robinson: 
+https://github.com/dgrtwo/data-screencasts/blob/master/volcano-eruptions.Rmd
+
+## Get the data
+
+
+```r
+volcano <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/volcano.csv')
+eruptions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/eruptions.csv')
+events <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/events.csv')
+tree_rings <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/tree_rings.csv')
+sulfur <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/sulfur.csv')
+```
+
+## Load some Libraries
+
+```r
+library(tidyverse)
+library(ggplot2)
+```
+
+## Changing the eruption year to a number
+
+
+```r
+volcano %>%
+  mutate(last_eruption_year = as.numeric(last_eruption_year))
+```
+
+```
+## Warning: NAs introduced by coercion
+```
+
+```
+## # A tibble: 958 x 26
+##    volcano_number volcano_name primary_volcano~ last_eruption_y~ country region
+##             <dbl> <chr>        <chr>                       <dbl> <chr>   <chr> 
+##  1         283001 Abu          Shield(s)                   -6850 Japan   Japan~
+##  2         355096 Acamarachi   Stratovolcano                  NA Chile   South~
+##  3         342080 Acatenango   Stratovolcano(e~             1972 Guatem~ Méxic~
+##  4         213004 Acigol-Nevs~ Caldera                     -2080 Turkey  Medit~
+##  5         321040 Adams        Stratovolcano                 950 United~ Canad~
+##  6         283170 Adatarayama  Stratovolcano(e~             1996 Japan   Japan~
+##  7         221170 Adwa         Stratovolcano                  NA Ethiop~ Afric~
+##  8         221110 Afdera       Stratovolcano                  NA Ethiop~ Afric~
+##  9         284160 Agrigan      Stratovolcano                1917 United~ Japan~
+## 10         342100 Agua         Stratovolcano                  NA Guatem~ Méxic~
+## # ... with 948 more rows, and 20 more variables: subregion <chr>,
+## #   latitude <dbl>, longitude <dbl>, elevation <dbl>, tectonic_settings <chr>,
+## #   evidence_category <chr>, major_rock_1 <chr>, major_rock_2 <chr>,
+## #   major_rock_3 <chr>, major_rock_4 <chr>, major_rock_5 <chr>,
+## #   minor_rock_1 <chr>, minor_rock_2 <chr>, minor_rock_3 <chr>,
+## #   minor_rock_4 <chr>, minor_rock_5 <chr>, population_within_5_km <dbl>,
+## #   population_within_10_km <dbl>, population_within_30_km <dbl>,
+## #   population_within_100_km <dbl>
+```
+
+# Plot the number of eruptions by year as a histogram with log10 x axis.
+
+
+```r
+volcano %>%
+  count(evidence_category, sort = TRUE)
+```
+
+```
+## # A tibble: 5 x 2
+##   evidence_category      n
+##   <chr>              <int>
+## 1 Eruption Observed    428
+## 2 Eruption Dated       226
+## 3 Evidence Credible    193
+## 4 Evidence Uncertain    84
+## 5 Unrest / Holocene     27
+```
+
+
+```r
+volcano %>%
+  mutate(years_ago= 2020-as.numeric(last_eruption_year)) %>%
+  ggplot(aes(years_ago+1, fill=evidence_category)) +
+  geom_histogram()+
+  scale_x_log10()
+```
+
+```
+## Warning: NAs introduced by coercion
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+```
+## Warning: Removed 301 rows containing non-finite values (stat_bin).
+```
+
+![](volcano_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+
+# Machine Learning
+
 Following along the example of Julia Silge:
 https://juliasilge.com/blog/multinomial-volcano-eruptions/ 
 
@@ -14,11 +118,6 @@ https://juliasilge.com/blog/multinomial-volcano-eruptions/
 volcano_raw <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/volcano.csv")
 ```
 
-## Load some Libraries
-
-```r
-library(tidyverse)
-```
 
 ## Count the number of primary volcano types
 
@@ -100,7 +199,7 @@ ggplot() +
   labs(x = NULL, y = NULL, color = NULL)
 ```
 
-![](volcano_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+![](volcano_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 
 # Bootstrap resample time!
@@ -118,16 +217,16 @@ volcano_boot
 ## # A tibble: 25 x 2
 ##    splits            id         
 ##    <list>            <chr>      
-##  1 <split [958/356]> Bootstrap01
-##  2 <split [958/337]> Bootstrap02
-##  3 <split [958/356]> Bootstrap03
-##  4 <split [958/333]> Bootstrap04
-##  5 <split [958/357]> Bootstrap05
-##  6 <split [958/351]> Bootstrap06
-##  7 <split [958/369]> Bootstrap07
-##  8 <split [958/340]> Bootstrap08
-##  9 <split [958/348]> Bootstrap09
-## 10 <split [958/359]> Bootstrap10
+##  1 <split [958/346]> Bootstrap01
+##  2 <split [958/338]> Bootstrap02
+##  3 <split [958/362]> Bootstrap03
+##  4 <split [958/352]> Bootstrap04
+##  5 <split [958/363]> Bootstrap05
+##  6 <split [958/345]> Bootstrap06
+##  7 <split [958/359]> Bootstrap07
+##  8 <split [958/354]> Bootstrap08
+##  9 <split [958/369]> Bootstrap09
+## 10 <split [958/334]> Bootstrap10
 ## # ... with 15 more rows
 ```
 
@@ -238,8 +337,8 @@ volcano_res %>%
 ## # A tibble: 2 x 5
 ##   .metric  .estimator  mean     n std_err
 ##   <chr>    <chr>      <dbl> <int>   <dbl>
-## 1 accuracy multiclass 0.658    25 0.00453
-## 2 roc_auc  hand_till  0.794    25 0.00402
+## 1 accuracy multiclass 0.655    25 0.00351
+## 2 roc_auc  hand_till  0.796    25 0.00382
 ```
 
 ## Confusion matrix
@@ -254,9 +353,9 @@ volcano_res %>%
 ```
 ##                Truth
 ## Prediction      Other Shield Stratovolcano
-##   Other          1941    314           776
-##   Shield          231    561           184
-##   Stratovolcano  1281    207          3251
+##   Other          1983    304           793
+##   Shield          274    563           202
+##   Stratovolcano  1293    205          3276
 ```
 
 ## Grouping by resample
@@ -273,16 +372,16 @@ volcano_res %>%
 ## # A tibble: 25 x 4
 ##    id          .metric .estimator .estimate
 ##    <chr>       <chr>   <chr>          <dbl>
-##  1 Bootstrap01 ppv     macro          0.635
-##  2 Bootstrap02 ppv     macro          0.669
+##  1 Bootstrap01 ppv     macro          0.631
+##  2 Bootstrap02 ppv     macro          0.650
 ##  3 Bootstrap03 ppv     macro          0.628
-##  4 Bootstrap04 ppv     macro          0.581
-##  5 Bootstrap05 ppv     macro          0.649
-##  6 Bootstrap06 ppv     macro          0.631
-##  7 Bootstrap07 ppv     macro          0.633
-##  8 Bootstrap08 ppv     macro          0.575
-##  9 Bootstrap09 ppv     macro          0.666
-## 10 Bootstrap10 ppv     macro          0.640
+##  4 Bootstrap04 ppv     macro          0.614
+##  5 Bootstrap05 ppv     macro          0.608
+##  6 Bootstrap06 ppv     macro          0.639
+##  7 Bootstrap07 ppv     macro          0.612
+##  8 Bootstrap08 ppv     macro          0.619
+##  9 Bootstrap09 ppv     macro          0.627
+## 10 Bootstrap10 ppv     macro          0.606
 ## # ... with 15 more rows
 ```
 
@@ -303,7 +402,7 @@ rf_spec %>%
   vip(geom = "point")
 ```
 
-![](volcano_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+![](volcano_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
 
 
 
@@ -325,20 +424,20 @@ volcano_pred
 ```
 
 ```
-## # A tibble: 8,746 x 14
+## # A tibble: 8,893 x 14
 ##    id    .pred_Other .pred_Shield .pred_Stratovol~  .row .pred_class
 ##    <chr>       <dbl>        <dbl>            <dbl> <int> <fct>      
-##  1 Boot~       0.234       0.0645            0.701     5 Stratovolc~
-##  2 Boot~       0.201       0.112             0.688    11 Stratovolc~
-##  3 Boot~       0.508       0.0164            0.476    12 Other      
-##  4 Boot~       0.518       0.0236            0.459    14 Other      
-##  5 Boot~       0.297       0.135             0.568    19 Stratovolc~
-##  6 Boot~       0.315       0.0311            0.654    21 Stratovolc~
-##  7 Boot~       0.324       0.0970            0.579    23 Stratovolc~
-##  8 Boot~       0.190       0.442             0.368    24 Shield     
-##  9 Boot~       0.163       0.542             0.295    26 Shield     
-## 10 Boot~       0.276       0.0660            0.658    27 Stratovolc~
-## # ... with 8,736 more rows, and 8 more variables: volcano_type <fct>,
+##  1 Boot~      0.312        0.0140           0.674      2 Stratovolc~
+##  2 Boot~      0.300        0.0538           0.646      5 Stratovolc~
+##  3 Boot~      0.179        0.0862           0.735      6 Stratovolc~
+##  4 Boot~      0.272        0.0872           0.641      7 Stratovolc~
+##  5 Boot~      0.228        0.0957           0.677      9 Stratovolc~
+##  6 Boot~      0.197        0.0253           0.777     10 Stratovolc~
+##  7 Boot~      0.367        0.0191           0.613     21 Stratovolc~
+##  8 Boot~      0.0197       0.954            0.0266    25 Shield     
+##  9 Boot~      0.270        0.0596           0.671     27 Stratovolc~
+## 10 Boot~      0.0639       0.896            0.0401    31 Shield     
+## # ... with 8,883 more rows, and 8 more variables: volcano_type <fct>,
 ## #   correct <lgl>, volcano_number <dbl>, latitude <dbl>, longitude <dbl>,
 ## #   elevation <dbl>, tectonic_settings <fct>, major_rock_1 <fct>
 ```
@@ -366,5 +465,5 @@ ggplot() +
 ## Warning: Ignoring unknown aesthetics: x, y
 ```
 
-![](volcano_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
+![](volcano_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
 
