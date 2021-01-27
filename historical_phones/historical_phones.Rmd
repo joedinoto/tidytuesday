@@ -1,0 +1,160 @@
+---
+title: "historical phones"
+author: "Joe DiNoto"
+date: "11/15/2020"
+output: 
+  html_document: 
+    toc: yes
+    number_sections: yes
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Get the data
+
+Source: https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-11-10/readme.md4
+David Robinson's video: https://www.youtube.com/watch?v=pJPqAIb8MKA
+
+
+```{r warning=FALSE, message=FALSE}
+# load libraries
+library(tidyverse)
+library(ggplot2)
+library(scales)
+
+# load data
+mobile <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/mobile.csv')
+landline <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/landline.csv')
+```
+
+Merge the data sets: 
+
+```{r}
+mobile_rn <- mobile %>%
+  rename(subscriptions=mobile_subs) %>%
+  mutate(type="mobile")
+
+landline_rn <- landline %>%
+  rename(subscriptions=landline_subs) %>%
+  mutate(type="landline")
+
+phones <- bind_rows(mobile_rn,landline_rn) %>%
+  rename(country=entity)
+```
+
+# Graph some stuff!
+
+```{r}
+phones %>% filter(country=="United States") %>%
+  ggplot(aes(year,subscriptions,color=type)) +
+  geom_line()
+```
+
+```{r}
+phones %>% filter(country=="China") %>%
+  ggplot(aes(year,subscriptions,color=type)) +
+  geom_line()
+```
+
+```{r}
+phones %>% filter(country=="Australia") %>%
+  ggplot(aes(year,subscriptions,color=type)) +
+  geom_line()
+```
+
+
+```{r}
+phones %>% 
+  ggplot(aes(year,
+             subscriptions,
+             color=type,
+             group=interaction(type,country))) +
+  geom_line()
+```
+
+```{r}
+country_sizes <- phones %>%
+  group_by(country) %>%
+  summarize(avg_population = mean(total_pop,na.rm = TRUE)) %>%
+  arrange(desc(avg_population))
+```
+
+```{r}
+phones %>% 
+  semi_join(country_sizes %>% top_n(10,avg_population),by="country") %>%
+  ggplot(aes(year,
+             subscriptions,
+             color=type,
+             group=interaction(type,country))) +
+  geom_line()
+```
+
+```{r}
+phones %>% 
+  semi_join(country_sizes %>% top_n(10,avg_population),by="country") %>%
+  ggplot(aes(year,
+             subscriptions,
+             color=type,
+             group=interaction(type,country))) +
+  geom_line() +
+  facet_wrap(~continent)
+```
+
+```{r}
+phones %>% 
+  semi_join(country_sizes %>% top_n(50,avg_population),by="country") %>%
+  ggplot(aes(year,
+             subscriptions,
+             color=type,
+             group=interaction(type,country))) +
+  geom_line() +
+  facet_wrap(~continent)
+```
+
+```{r}
+phones %>% 
+  filter(!is.na(subscriptions)) %>%
+  group_by(year,continent,type) %>%
+  summarise(avg_subs = mean(subscriptions)) %>%
+  ggplot(aes(year,
+             avg_subs,
+             color=type)) +
+  geom_line() +
+  facet_wrap(~continent)
+```
+
+```{r}
+phones %>% 
+  filter(!is.na(subscriptions)) %>%
+  group_by(year,continent,type) %>%
+  summarise(avg_subs = mean(subscriptions),
+            q25=quantile(subscriptions,.25),
+            q75=quantile(subscriptions,.75)) %>%
+  ggplot(aes(year,
+             avg_subs,
+             color=type)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=q25,ymax=q75),alpha=.25)+
+  facet_wrap(~continent)
+```
+
+```{r}
+phones %>% 
+  filter(!is.na(subscriptions)) %>%
+  group_by(year,continent,type) %>%
+  summarise(avg_subs = median(subscriptions),  # change to median
+            q25=quantile(subscriptions,.25),
+            q75=quantile(subscriptions,.75)) %>%
+  ggplot(aes(year,
+             avg_subs,
+             color=type)) +
+  geom_line() +
+  geom_ribbon(aes(ymin=q25,ymax=q75),alpha=.25)+
+  facet_wrap(~continent) +
+  labs(x="year",
+       y="median subscriptions per 100 people",
+       title = "Mobile and landline adoption by continent",
+       subtitle = "ribbon is 25%-75% percentile range")
+```

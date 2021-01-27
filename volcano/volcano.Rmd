@@ -105,6 +105,31 @@ volcano %>%
   addMeasure()
 ```
 
+# Histogram of population within 5 km of any given volcano
+
+```{r}
+volcano %>%
+  ggplot(aes(population_within_5_km)) +
+  geom_histogram() +
+  scale_x_log10()
+```
+```{r}
+library(gganimate)
+eruptions %>%
+  ggplot(aes(2020 - start_year)) +
+  geom_histogram() +
+  scale_x_log10()
+```
+```{r}
+eruptions %>%
+  filter(start_year >= 1900,
+         eruption_category != "Discredited Eruption") %>%
+  mutate(years_ago = 2020-start_year) %>%
+  ggplot(aes(years_ago)) +
+  geom_histogram() +
+  scale_x_log10()
+```
+
 # Machine Learning
 
 Following along the example of Julia Silge:

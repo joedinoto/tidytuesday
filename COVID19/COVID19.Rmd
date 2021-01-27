@@ -1,0 +1,24 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## get the data
+
+```{r message=FALSE, warning=FALSE, error=FALSE,cache=TRUE}
+COVID19 <- read.csv("owid-covid-data.csv")
+```
+
+## load libraries
+```{r message=FALSE, warning=FALSE, error=FALSE,cache=TRUE}
+library(tidyverse)
+library(ggplot2)
+```
+
+## plot 
+
+```{r}
+COVID19 %>%
+  filter()
+```
+
