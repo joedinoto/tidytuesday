@@ -1,7 +1,11 @@
 # tidytuesday
 A social data science project from the R user community.
 
-* 2021 02 08 [HBCU data](/HBCU/HBCU.md)
+* 2021 02 09 [wealth inequality data](/2021_02_09_wealth_inequality/wealth inequality.Rmd)
+
+![wealth inequality graph](/2021_02_09_wealth_inequality/)
+
+* 2021 02 01 [HBCU data](/HBCU/HBCU.md)
 
 ![HBCU Graph](/HBCU/HBCU_files/figure-html/unnamed-chunk-7-1.png)
 

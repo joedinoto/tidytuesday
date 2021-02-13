@@ -7,33 +7,52 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r message=FALSE, warning=FALSE,error=FALSE}
+
+
+```r
 library(tidyverse)
 library(tidytuesdayR)
 library(dplyr)
 ```
 
-```{r warning=FALSE, message=FALSE,error=FALSE}
+
+```r
 tuesdata <- tidytuesdayR::tt_load(2021, week = 7)
+```
+
+```
+## 
+## 	Downloading file 1 of 11: `home_owner.csv`
+## 	Downloading file 2 of 11: `income_aggregate.csv`
+## 	Downloading file 3 of 11: `income_distribution.csv`
+## 	Downloading file 4 of 11: `income_limits.csv`
+## 	Downloading file 5 of 11: `income_mean.csv`
+## 	Downloading file 6 of 11: `income_time.csv`
+## 	Downloading file 7 of 11: `lifetime_earn.csv`
+## 	Downloading file 8 of 11: `lifetime_wealth.csv`
+## 	Downloading file 9 of 11: `race_wealth.csv`
+## 	Downloading file 10 of 11: `retirement.csv`
+## 	Downloading file 11 of 11: `student_debt.csv`
 ```
 
 
 ## Percent of student debt over time
 
-```{r}
+
+```r
 student_debt<- tuesdata$student_debt
 
 student_debt %>% 
   ggplot(aes(year,loan_debt_pct, fill=race)) + 
   geom_col(position = "dodge")
 ```
+
+![](wealth-inequality_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 ## Income distrubition over time
 
-```{r}
+
+```r
 income_time <- tuesdata$income_time
 
 income_time %>%
@@ -45,8 +64,11 @@ income_time %>%
   scale_y_continuous(labels=scales::dollar_format())
 ```
 
+![](wealth-inequality_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 # By what percentage did the income change from its initial value over time?
-```{r}
+
+```r
 # setting initial incomes
 initial_10 <- income_time$income_family[1]
 initial_50 <- income_time$income_family[2]
@@ -64,6 +86,7 @@ income_time %>%
   labs(title="percent of family income change relative to 1963",
        x="year",
        y="percent growth")
-
 ```
+
+![](wealth-inequality_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
