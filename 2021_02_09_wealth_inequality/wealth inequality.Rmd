@@ -1,0 +1,67 @@
+---
+title: "wealth inequality"
+author: "Joe DiNoto"
+date: "2/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE,error=FALSE}
+library(tidyverse)
+library(tidytuesdayR)
+library(dplyr)
+```
+
+```{r warning=FALSE, message=FALSE,error=FALSE}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 7)
+```
+
+
+## Percent of student debt over time
+
+```{r}
+student_debt<- tuesdata$student_debt
+
+student_debt %>% 
+  ggplot(aes(year,loan_debt_pct, fill=race)) + 
+  geom_col(position = "dodge")
+```
+## Income distrubition over time
+
+```{r}
+income_time <- tuesdata$income_time
+
+income_time %>%
+  ggplot(aes(year, income_family, color=percentile))+
+  geom_line(size=3)+
+  labs(title="family income over time by income percentile",
+       x="",
+       y="")+
+  scale_y_continuous(labels=scales::dollar_format())
+```
+
+# By what percentage did the income change from its initial value over time?
+```{r}
+# setting initial incomes
+initial_10 <- income_time$income_family[1]
+initial_50 <- income_time$income_family[2]
+initial_90 <- income_time$income_family[3]
+
+income_time %>%
+  pivot_wider(names_from = c(percentile), values_from = income_family) %>%
+  mutate(pct_10th = `10th`/initial_10) %>%
+  mutate(pct_50th = `50th`/initial_50) %>%
+  mutate(pct_90th = `90th`/initial_90) %>%
+  select(year,pct_10th:pct_90th) %>%
+  pivot_longer(pct_10th:pct_90th,names_to = "percentile", values_to="pct_change_from_1963") %>%
+  ggplot(aes(year,pct_change_from_1963,color=percentile))+
+  geom_line(size=2)+
+  labs(title="percent of family income change relative to 1963",
+       x="year",
+       y="percent growth")
+
+```
+
