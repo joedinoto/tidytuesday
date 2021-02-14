@@ -90,3 +90,36 @@ income_time %>%
 
 ![](wealth-inequality_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
+
+```r
+income_limits <- tuesdata$income_limits
+```
+
+
+```r
+income_limits %>%
+  filter(dollar_type=="2019 Dollars") %>%
+  #filter(income_quintile==c("Top 5%","Lowest"))%>%
+  #filter(race== c("Asian Alone","White Alone","Black Alone"))%>%
+  ggplot(aes(year,income_dollars,color=race)) +
+  geom_line()+
+  facet_wrap(.~income_quintile)+
+  scale_y_continuous(labels=scales::dollar_format()) +
+  scale_color_brewer(palette="Set2")
+```
+
+![](wealth-inequality_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+```r
+income_limits %>%
+  filter(dollar_type=="2019 Dollars") %>%
+  filter(race != "All Races") %>%
+  filter(year>=2000)%>%
+  ggplot(aes(year,income_dollars,color=income_quintile)) +
+  geom_line()+
+  facet_wrap(.~race)+
+  scale_y_continuous(labels=scales::dollar_format()) +
+  scale_color_brewer(palette="Set2")
+```
+
+![](wealth-inequality_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
