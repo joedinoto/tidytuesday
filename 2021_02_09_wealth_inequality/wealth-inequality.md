@@ -123,3 +123,59 @@ income_limits %>%
 ```
 
 ![](wealth-inequality_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+## Experimenting with animations
+
+
+```r
+library(ggplot2)
+library(gganimate)
+library(gifski)
+
+anim <- ggplot(mtcars, aes(mpg, disp)) +
+  transition_states(gear, transition_length = 2, state_length = 1) +
+  enter_fade() +
+  exit_fade()
+
+if (FALSE) {
+# Explicitly animate using default (same as just printing the animation)
+animate(anim)
+
+# Change duration and framerate
+animate(anim, fps = 20, duration = 15)
+
+# Make the animation pause at the end and then rewind
+animate(anim, nframes = 100, end_pause = 10, rewind = TRUE)
+
+# Use a different renderer
+animate(anim, renderer = file_renderer('~/animation/'))[1:6]
+
+# Specify device dimensions and/or resolution
+animate(anim, height = 2, width = 3, units = "in", res = 150)
+}
+```
+
+
+```r
+library(gganimate)
+#> Loading required package: ggplot2
+
+# We'll start with a static plot
+p <- ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) +
+  geom_point()
+
+plot(p)
+```
+
+![](wealth-inequality_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+```r
+anim <- p +
+  transition_states(Species,
+                    transition_length = 2,
+                    state_length = 1)
+
+anim
+```
+
+![](wealth-inequality_files/figure-html/unnamed-chunk-11-1.gif)<!-- -->
+
