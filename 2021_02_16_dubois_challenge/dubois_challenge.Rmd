@@ -7,6 +7,10 @@ output:
     keep_md: yes
 ---
 
+# Dubois Challenge
+
+TidyTuesday page on github with data set and background info. https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-02-16/readme.md
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -30,13 +34,14 @@ ga_pop %>%
   pivot_longer(Colored:White,names_to="race",values_to="pop") %>%
   mutate(pop=pop/100) %>%
   ggplot(aes(Year,pop,color=race)) +
-  geom_point() +
+  geom_point(size=3) +
   geom_line()+
   labs(title="comparative increasee in white and black population in GA",
        x="year",
        y="relative increase in population (% over previous year)")+
-  scale_y_continuous(labels = scales::percent, breaks =seq(0,1,.1))+
-  scale_x_continuous(limits=c(1790,1890),breaks=seq(1790,1890,10))+
-  geom_vline(xintercept=1863,color="red",linetype="dotted")
+  scale_y_continuous(labels = scales::percent, minor_breaks = seq(0 , 1, .1),breaks =seq(0,1,.2))+
+  scale_x_continuous(limits=c(1790,1890),minor_breaks = seq(1790 , 1890, 10),breaks=seq(1790,1890,20))+
+  geom_vline(xintercept=1863,color="black",linetype="dotted")+
+  theme_light()
 ```
 
