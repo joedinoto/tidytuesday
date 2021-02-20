@@ -56,7 +56,8 @@ ga_pop %>%
   scale_y_continuous(labels = scales::percent, minor_breaks = seq(0 , 1, .1),breaks =seq(0,1,.2))+
   scale_x_continuous(limits=c(1790,1890),minor_breaks = seq(1790 , 1890, 10),breaks=seq(1790,1890,20))+
   geom_vline(xintercept=1863,color="black",linetype="dotted")+
-  theme_light()
+  theme_light()+
+  coord_flip()
 ```
 
 ![](dubois_challenge_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
