@@ -1,0 +1,45 @@
+---
+title: "Employment and Earnings"
+author: "Joe DiNoto"
+date: "2/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+library(tidytuesdayR)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2021-02-23')
+```
+
+```{r}
+earn <- tuesdata$earn
+employed <- tuesdata$employed
+```
+
+
+
+```{r}
+earn %>%
+  filter(race != "All Races") %>%
+  ggplot(aes(year,median_weekly_earn,fill=race))+
+  geom_col(position="dodge")+
+  facet_grid(~age)+
+  coord_flip()
+```
+
+```{r}
+earn %>%
+  filter(race != "All Races") %>%
+  filter(ethnic_origin != "All Origins")
+```
+
+
