@@ -1,0 +1,97 @@
+---
+title: "Super Bowl Commercials"
+author: "Joe DiNoto"
+date: "3/7/2021"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+First, load packages.
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tidytuesdayR)
+library(scales)
+```
+
+Second, grab the data.
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+tuesdata <- tidytuesdayR::tt_load('2021-03-02')
+youtube<- tuesdata$youtube
+```
+
+Look at the data.
+```{r}
+summary(youtube)
+```
+How many ads per year?
+```{r}
+youtube %>%
+  count(year) %>%
+  ggplot(aes(year,n))+
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits = c(0,15))+
+  labs(title="# of superbowl commercials per year",
+       x="year",
+       y="# of superbowl ads")
+```
+```{r}
+youtube %>%
+  filter(!is.na(brand))%>%
+  mutate(brand=fct_lump(brand,4))%>%
+  count(brand,year) %>%
+  ggplot(aes(year,n)) +
+  geom_col() +
+  facet_grid(vars(brand))+
+  labs(title="# of commercials per year, by category")
+```
+How well-liked (or disliked) are certain commercials?
+```{r}
+youtube%>%
+  filter(dislike_count >0) %>%
+  mutate(brand=fct_lump(brand,4))%>%
+  mutate(L_D = like_count/dislike_count) %>%
+  ggplot(aes(L_D,view_count,color=brand,size=view_count)) +
+  geom_point()+
+  scale_y_log10()+
+  facet_grid(vars(use_sex))+
+  labs(title="ratio of (like)/(dislike) vs. view count on youtube",
+  subtitle = "FALSE = commercial does not use sex)")
+```
+
+It appears engagement is very low. The ratio of `likes/views` hovers just under `1%`, regardless of the brand, use of sex in the commercial, and/or brand.  
+```{r}
+youtube%>%
+  filter(dislike_count >0) %>%
+  mutate(brand=fct_lump(brand,4))%>%
+  mutate(D_V = dislike_count/view_count) %>%
+  ggplot(aes(D_V,view_count,color=brand,size=view_count)) +
+  geom_point()+
+  scale_y_log10()+
+  scale_x_continuous(labels=percent)+
+  facet_grid(vars(use_sex))+
+  labs(title="ratio of (dislikes)/(views) vs. view count on youtube",
+  subtitle = "FALSE = commercial does not use sex)")
+```
+```{r}
+youtube%>%
+  filter(dislike_count >0) %>%
+  mutate(brand=fct_lump(brand,4))%>%
+  mutate(L_V = like_count/view_count) %>%
+  ggplot(aes(L_V,view_count,color=brand,size=view_count)) +
+  geom_point()+
+  scale_y_log10()+
+  scale_x_continuous(labels=percent)+
+  facet_grid(vars(use_sex))+
+  labs(title="ratio of (likes)/(views) vs. view count on youtube",
+  subtitle = "FALSE = commercial does not use sex)")
+```
+
