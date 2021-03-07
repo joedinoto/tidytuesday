@@ -7,27 +7,51 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r message=FALSE,warning=FALSE,error=FALSE}
+
+
+```r
 library(tidytuesdayR)
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
 ```
 
-```{r}
+
+```r
 tuesdata <- tidytuesdayR::tt_load('2021-02-23')
 ```
 
-```{r}
+```
+## --- Compiling #TidyTuesday Information for 2021-02-23 ----
+```
+
+```
+## --- There are 2 files available ---
+```
+
+```
+## --- Starting Download ---
+```
+
+```
+## 
+## 	Downloading file 1 of 2: `earn.csv`
+## 	Downloading file 2 of 2: `employed.csv`
+```
+
+```
+## --- Download complete ---
+```
+
+
+```r
 earn <- tuesdata$earn
 employed <- tuesdata$employed
 ```
 
-```{r}
+
+```r
 employed_clean <- employed %>%
   mutate(dimension = case_when(
     race_gender == "TOTAL" ~ "Total",
@@ -38,7 +62,8 @@ employed_clean <- employed %>%
 
 
 
-```{r}
+
+```r
 earn %>%
   filter(race != "All Races") %>%
   filter(sex != "Both Sexes")%>%
@@ -49,6 +74,8 @@ earn %>%
   theme(axis.text.x = element_text(angle = 90))+
   facet_grid(vars(age),vars(sex_race))
 ```
+
+![](employment_and_earnings_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
 
 
