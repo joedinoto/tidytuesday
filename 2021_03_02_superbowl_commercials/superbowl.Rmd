@@ -94,4 +94,88 @@ youtube%>%
   labs(title="ratio of (likes)/(views) vs. view count on youtube",
   subtitle = "FALSE = commercial does not use sex)")
 ```
+Following along with David Robinson
+```{r}
+youtube %>% 
+  count(brand,sort=TRUE) %>%
+  mutate(brand=fct_reorder(brand,n)) %>%
+  ggplot(aes(n,brand))+
+  geom_col()
+```
+```{r}
+youtube %>%
+  ggplot(aes(year,fill=brand))+
+  geom_bar() +
+  facet_wrap(~ brand)+
+  theme(legend.position="none")
+```
+
+```{r}
+youtube %>%
+  gather(metric,value,contains("_count"))%>%
+  ggplot(aes(value))+
+  geom_histogram(binwidth=.5)+
+  scale_x_log10(labels=comma)+
+  facet_wrap(~metric)+
+  labs(x="number of views")
+```
+
+```{r}
+youtube %>%
+  filter(!is.na(view_count))%>%
+  mutate(brand=fct_reorder(brand,view_count))%>%
+  ggplot(aes(view_count,brand, fill=funny))+
+  geom_boxplot()+
+  scale_x_log10(labels=comma)
+
+```
+
+median views per year
+```{r}
+youtube %>%
+  filter(!is.na(view_count)) %>%
+  group_by(year)%>%
+  summarize(n=n(),
+            median_views=median(view_count))%>%
+  ggplot(aes(year,median_views))+
+  geom_line()+
+  geom_point(aes(size=n))+
+  theme(legend.position = "none")+
+  scale_y_log10(labels=comma)
+```
+
+```{r}
+youtube %>%
+  gather(category,value, funny:use_sex)%>%
+  ggplot(aes(category,view_count, fill=value))+
+  geom_boxplot()+
+  scale_y_log10()
+```
+
+```{r}
+youtube %>%
+  filter(!is.na(view_count))%>%
+  gather(category,value, funny:use_sex)%>%
+  group_by(category,value) %>%
+  summarize(n=n(),
+            median_view_count=median(view_count)) %>%
+  ggplot(aes(category,median_view_count, fill=value))+
+  geom_col(position="dodge")
+```
+
+Correlations between value and the log of the view count.
+```{r}
+youtube %>%
+  filter(!is.na(view_count))%>%
+  gather(category,value, funny:use_sex)%>%
+  group_by(category) %>%
+  summarize(correlation = cor(value,log(view_count+1))) %>%
+  arrange(desc(correlation))
+```
+
+```{r}
+lm(log2(view_count) ~ danger+patriotic,
+   data=youtube) %>%
+  summary()
+```
 
