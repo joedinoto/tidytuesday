@@ -1,9 +1,10 @@
 ---
 title: "historical phones"
 author: "Joe DiNoto"
-date: "11/15/2020"
-output: 
-  html_document: 
+output:
+  pdf_document:
+    toc: yes
+  html_document:
     toc: yes
     number_sections: yes
     keep_md: yes
@@ -44,7 +45,7 @@ phones <- bind_rows(mobile_rn,landline_rn) %>%
   rename(country=entity)
 ```
 
-# Graph some stuff!
+# Explore the data via more and more refined charts
 
 ```{r}
 phones %>% filter(country=="United States") %>%

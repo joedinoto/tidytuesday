@@ -1,0 +1,36 @@
+---
+title: "Steam Games"
+author: "Joe DiNoto"
+date: "3/21/2021"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+First, load packages.
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+library(tidytuesdayR)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+```
+
+Second, grab the data.
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+tuesdata <- tidytuesdayR::tt_load('2021-03-16')
+games <- tuesdata$games
+```
+```{r}
+games %>%
+  count(year,month, sort=TRUE) 
+```
+
+
+

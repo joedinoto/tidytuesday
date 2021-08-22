@@ -68,3 +68,18 @@ raw_bechdel_joined %>%
        y="")+
   scale_y_continuous(labels = scales::percent, limits=c(0,1))
 ```
+
+Looking at the movies data
+
+```{r}
+movies %>%
+  count(year,binary)
+```
+
+
+```{r}
+```
+
+
+```{r}
+```

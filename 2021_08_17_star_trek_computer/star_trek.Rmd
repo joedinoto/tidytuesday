@@ -1,0 +1,112 @@
+---
+title: "Star Trek"
+author: "Joe DiNoto"
+date: "8/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+First, load packages.
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tidytuesdayR)
+library(scales)
+library(tidytext)
+```
+
+Second, get the data.
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+computer <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-17/computer.csv')
+```
+Third, explore the data.
+
+```{r}
+names(computer)
+```
+
+```{r}
+computer %>% 
+  filter(char != "Computer Voice", char != "Computer") %>%
+  count(char = fct_lump(char, 10))%>%
+  arrange(desc(n)) %>%
+  mutate(char=fct_reorder(char,n)) %>%
+  ggplot(aes(char,n))+
+  geom_col() +
+  labs(title="Which character spoke to the computer the most?",
+         x="character",
+         y="# of times they addressed the computer")
+```
+
+```{r}
+computer %>% 
+  filter(char != "Computer Voice", char != "Computer") %>%
+  count(char = fct_lump(char, 10))%>%
+  arrange(desc(n))
+```
+
+```{r}
+ computer_lines <- computer %>%
+  filter(char != "Computer Voice") %>%
+  select(char,line) %>%
+  unnest_tokens(word,line) %>%
+  anti_join(get_stopwords()) %>%
+  count(char,word,sort=TRUE)
+
+computer_lines %>%
+  filter(char !="Computer") %>%
+  filter(word !="computer") %>%
+  View()
+```
+
+
+```{r}
+library(janeaustenr)
+
+d <- tibble(txt = prideprejudice)
+
+d %>%
+  unnest_tokens(ngram, txt, token = "ngrams", n = 2)
+```
+
+
+```{r}
+# first sweep to get rid of (all text in parenthesis) including the parenthesis!
+computer$line<-  str_replace(computer$line,"\\s*\\([^\\)]+\\)","")
+
+#second sweep to get rid of (all text in parenthesis) including the parenthesis!
+computer$line<-  str_replace(computer$line,"\\s*\\([^\\)]+\\)","")
+
+computer_ngram_2<- computer %>%
+  filter(char != "Computer Voice") %>%
+  filter(char != "Computer") %>%
+  unnest_tokens(ngram, line, token = "ngrams", n = 3) %>%
+  select(char,ngram) %>%
+  count(ngram,sort=TRUE)
+
+computer_ngram_2
+
+```
+
+```{r}
+fruits <- c("dog (to the cat) bark", "cat (computer to me) meow", "(to the computer) exit program!")
+str_remove(fruits, "\\s*\\([^\\)]+\\)")
+#str_remove_all(fruits, "\(([^)]+)\)")
+```
+```{r}
+df <- data.frame(team=c('team_A', 'team_B', 'team_C', 'team_D'),
+                 conference=c('West (to the west baybee!)', '(the west sucks) West', ' (eat the east) East', 'East'),
+                 points=c(88, 97, 94, 104))
+
+df$conference<-  str_replace(df$conference,"\\s*\\([^\\)]+\\)","")
+
+  df
+
+```
+
