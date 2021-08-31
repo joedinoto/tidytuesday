@@ -1,0 +1,57 @@
+---
+title: "Birdbaths"
+author: "Joe DiNoto"
+date: "8/31/2021"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+# load packages
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tidytuesdayR)
+library(scales)
+library(tidytext)
+
+# get data
+bird_baths <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-31/bird_baths.csv')
+
+# clean data
+bird_baths_clean <- bird_baths %>%
+  filter(!is.na(survey_year)) %>% # remove NAs from survey_year
+  filter(bird_count > 0)  # remove rows with zero bird_count
+# This cleaning takes 161,057 rows --> 5,545 rows
+```
+
+```{r}
+bird_baths_clean %>%
+  count(survey_year,bird_type,bird_count)%>%
+  filter(n>100)%>%
+  ggplot(aes(n,reorder(bird_type,n)))+
+  geom_col()+
+  facet_wrap(~survey_year)+
+  labs(title="Birds spotted more than 100 times per year",
+       x="number of times spotted",
+       y="bird type")
+```
+
+```{r}
+bird_baths_clean %>%
+  count(urban_rural,bioregions,survey_year,bird_type,bird_count)%>%
+  filter(n>25)%>%
+  ggplot(aes(n,reorder(bird_type,n)))+
+  geom_col(aes(fill=urban_rural))+
+  facet_wrap(~bioregions)+
+  labs(title="Birds spotted more than 100 times per year",
+       x="number of times spotted",
+       y="bird type")
+```
+
+

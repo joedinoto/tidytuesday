@@ -1,0 +1,115 @@
+---
+title: "Lemurs"
+author: "Joe DiNoto"
+date: "8/24/2021"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r message=FALSE,warning=FALSE,error=FALSE}
+# load packages
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tidytuesdayR)
+library(scales)
+library(tidytext)
+
+# get data
+lemurs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-24/lemur_data.csv')
+
+# clean data
+
+
+```
+
+```{r}
+lemurs %>%
+  select(name,weight_g,weight_date, preg_status, age_category) %>%
+  filter(name == "Antonia") %>%
+  ggplot(aes(weight_date,weight_g, color=preg_status)) +
+  geom_point()
+```
+```{r}
+lemurs %>%
+  ggplot(aes(n_known_offspring)) +
+  geom_histogram()
+```
+```{r}
+lemurs %>%
+  select(name,weight_g,weight_date, preg_status, age_category) %>%
+  filter(name == "Fuggles") %>%
+  ggplot(aes(weight_date,weight_g,color=age_category)) +
+  geom_point()+
+  geom_line()+
+  labs(title="Fuggle's weight")
+```
+```{r}
+lemurs %>%
+  select(name,sex,weight_g,weight_date,age_at_wt_mo,age_category,preg_status,taxon)%>%
+  filter(age_category=="adult") %>%
+  filter(sex =="F") %>%
+  filter(taxon == "PCOQ") %>%
+  ggplot(aes(age_at_wt_mo,weight_g))+
+  #geom_point()+
+  #facet_wrap(~preg_status)+
+  geom_smooth(aes(color=preg_status))
+```
+
+Let's do the graph above, but for all species. 
+What I should really learn to do is create a shiny app that lets you select the species of lemur. 
+
+```{r}
+lemurs %>%
+  select(name,sex,weight_g,weight_date,age_at_wt_y,age_category,preg_status,taxon)%>%
+  filter(age_category=="adult") %>%
+  #filter(sex =="F") %>%
+  #filter(taxon == "GMOH") %>%
+  ggplot(aes(age_at_wt_y,weight_g))+
+  #geom_point(aes(color=sex))+
+  facet_wrap(~taxon, scales = "free", nrow = 3)+
+  geom_smooth(aes(color=sex))
+  
+```
+
+
+```{r}
+lemurs %>%
+  filter(taxon=="MMUR")%>%
+  #filter(name=="Fuggles")%>%
+  ggplot(aes(weight_date,weight_g))+
+  #geom_point(aes(color=age_category))+
+  geom_line(aes(color=name))+
+  theme(legend.position="none")
+```
+
+```{r}
+lemurs %>%
+  filter(taxon=="MMUR") %>%
+  distinct(name)
+```
+```{r}
+lemurs %>%
+  count(litter_size, sort=TRUE)
+```
+
+
+Let's do a histogram of the weights of the species 
+
+```{r}
+lemurs %>%
+  filter(weight_g<1000)%>% # under 1kg
+  ggplot(aes(x=reorder(taxon,weight_g,na.rm=TRUE),y=weight_g,color=sex))+
+  geom_boxplot()+
+  labs(x="taxon",
+       y="weight in grams")+
+  facet_grid(~preg_status)
+```
+
